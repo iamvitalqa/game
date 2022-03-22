@@ -96,7 +96,7 @@ while not done:
         text_rect = text.get_rect()
         text_x = display.get_width() / 2 - text_rect.width / 2
         text_y = display.get_height() / 2 - text_rect.height / 2
-        stop=display.blit(text, [text_x, text_y])
+        display.blit(text, [text_x, text_y])
     if y>760:
         game_over = True
         score = 0
@@ -113,7 +113,6 @@ while not done:
         display.blit(platform2, (plat2.x, plat2.y))
 
 ### GAME LOGIC
-    keys = pg.key.get_pressed()
     if not game_over:
         if keys[pg.K_a] and x > 0:
             x -= speed
