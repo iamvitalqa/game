@@ -1,0 +1,52 @@
+    if y > 750:
+        gameover = score_display.render("GAME OVER! Press this to restart => " + str(restart), 1, (GREEN))
+        display.blit(gameover,(250,200))
+        if y > 760:
+           score = 0
+
+### GAME OVER
+def show_go_screen(self):
+        if not self.running:
+            return
+        self.screen.blit(fon,(0,0))
+        self.draw_text("Press R to play again", 22, GREEN, W/2, H/4)
+        pg.display.flip()
+        while waiting:
+            self.clock.tick(FPS)
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
+                    waiting = False
+                    self.running = False
+                if event.type == pg.KEYDOWN:
+                   if event.key == pg.K_r:
+                      waiting = False
+def wait_for_key(self):
+        while waiting:
+            self.clock.tick(FPS)
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
+                    waiting = False
+                    self.running = False
+                if event.type == pg.KEYUP:
+                    waiting = False
+
+
+                    ### GAME OVER TEXT
+def text_objects(text, color):
+    textSurface = score_display.render(text, True, color)
+    return textSurface, textSurface.get_rect()
+
+def screen_gameover(msg, color, y_displace=0):
+    textSurf, textRect = text_objects(msg, color)
+    textRect.center = (W/2,), (H/2) + y_displace
+    display.blit(textSurf, textRect)
+
+def gameLoop():
+    global direction
+    gameexit = False
+    gameover = False
+    lead_x = W/2
+    lead_y = H/2
+    lead_x_change = 10
+    lead_y_change = 0
+###
