@@ -26,8 +26,9 @@ player_w = 50
 restart = 'R'
 FPS = 100
 clock=pg.time.Clock()
-waiting = True
 allbullets = []
+game_over = False
+done = False
 ###
 
 ### ДИСПЛЕЙ
@@ -61,8 +62,6 @@ platforms = [plat(random.randrange(0, W), random.randrange(0, H)) for i in range
 platforms2 = [plat2(random.randrange(0, W), random.randrange(0, H)) for i in range(2)]
 ###
 
-### GAME OVER TEXT
-###
 
 ### СТРЕЛЬБА
 class Bullet:
@@ -81,70 +80,90 @@ class Bullet:
 
 pg.mixer.pre_init(44100, -16, 2, 1024)
 pg.mixer.init()
+
 ### ГЛАВНЫЙ ЦИКЛ
-while True:
+while not done:
     events = pg.event.get()
     for event in events:
         if event.type == pg.QUIT:
-            pg.quit()
-            sys.exit()
+            done = True
 
     display.blit(fon, (0, 0))
+
+### GAME OVER (Quit & Restart)
+    if y > 750:
+        text = score_display.render("GAME OVER! R -> Restart  Q -> Quit", True, RED)
+        text_rect = text.get_rect()
+        text_x = display.get_width() / 2 - text_rect.width / 2
+        text_y = display.get_height() / 2 - text_rect.height / 2
+        stop=display.blit(text, [text_x, text_y])
+    if y>760:
+        game_over = True
+        score = 0
+    keys = pg.key.get_pressed()
+    if keys[pg.K_r]:
+        game_over = False
+    if keys[pg.K_q]:
+        done = True
+###
 
     for plat in platforms:
         display.blit(platform, (plat.x, plat.y))
     for plat2 in platforms2:
         display.blit(platform2, (plat2.x, plat2.y))
 
+### GAME LOGIC
     keys = pg.key.get_pressed()
-    if keys[pg.K_a] and x > 0:
-        x -= speed
-        player = pg.image.load("BigBobych.png")
-        player = pg.transform.scale(player, (player.get_width()//5, player.get_height()//5))
-        player = pg.transform.flip(player, True, False)
-    if keys[pg.K_d] and x + player_w < W:
-        x += speed
-        player = pg.image.load("BigBobych.png")
-        player = pg.transform.scale(player, (player.get_width()//5, player.get_height()//5))
-        player = pg.transform.flip(player, True, False)
+    if not game_over:
+        if keys[pg.K_a] and x > 0:
+            x -= speed
+            player = pg.image.load("BigBobych.png")
+            player = pg.transform.scale(player, (player.get_width()//5, player.get_height()//5))
+            player = pg.transform.flip(player, True, False)
+        if keys[pg.K_d] and x + player_w < W:
+            x += speed
+            player = pg.image.load("BigBobych.png")
+            player = pg.transform.scale(player, (player.get_width()//5, player.get_height()//5))
+            player = pg.transform.flip(player, True, False)
 
-    if keys[pg.K_SPACE]:
-        pg.mixer.music.load("bullet.wav")
-        pg.mixer.music.play(1)
-        pg.mixer.music.set_volume(1)
-        if len(allbullets) < 1:
-            allbullets.append(Bullet(x-20, y))
+        if keys[pg.K_SPACE]:
+            if len(allbullets) < 1:
+                allbullets.append(Bullet(x-20, y))
+                pg.mixer.music.load("bullet.wav")
+                pg.mixer.music.play(1)
+                pg.mixer.music.set_volume(1)
 
-    for bullet in allbullets:
-        if not bullet.move_bullet():
-            allbullets.remove(bullet)
+        for bullet in allbullets:
+            if not bullet.move_bullet():
+                allbullets.remove(bullet)
 
-    if y < h:
-        y = h
-        for plat in platforms:
-            plat.y = plat.y - dy
-            if plat.y > H:
-                plat.y = 0
-                plat.x = random.randrange(0, W)
-                score += random.randint(0,70)
+        if y < h:
+            y = h
+            for plat in platforms:
+                plat.y = plat.y - dy
+                if plat.y > H:
+                    plat.y = 0
+                    plat.x = random.randrange(0, W)
+                    score += random.randint(0,70)
 
-        for plat2 in platforms2:
-            plat2.y = plat2.y - dy
-            if plat2.y > H:
-                plat2.y = 0
-                plat2.x = random.randrange(0, W)
+            for plat2 in platforms2:
+                plat2.y = plat2.y - dy
+                if plat2.y > H:
+                    plat2.y = 0
+                    plat2.x = random.randrange(0, W)
 
-    dy += 0.2
-    y += dy
-    if y > H:
-        dy = -10
-    for plat in platforms:
-        if (x + 50 > plat.x) and (x + 20 < plat.x + 68) and (y + 70 > plat.y) and (y + 70 < plat.y + 14) and dy > 0:
+        dy += 0.2
+        y += dy
+        if y > H:
             dy = -10
+        for plat in platforms:
+            if (x + 50 > plat.x) and (x + 20 < plat.x + 68) and (y + 70 > plat.y) and (y + 70 < plat.y + 14) and dy > 0:
+                dy = -10
 
-    text = score_display.render("score: " + str(score), 1, (255,0,0))
-    display.blit(text, (W - 10 - text.get_width(),10))
-    display.blit(player, (x, y))
-    pg.display.update()
-    clock.tick(FPS)
+        text = score_display.render("score: " + str(score), 1, (255,0,0))
+        display.blit(text, (W - 10 - text.get_width(),10))
+        display.blit(player, (x, y))
+        clock.tick(FPS)
+        pg.display.update()
+###
 
