@@ -48,6 +48,9 @@ bullet_img = pg.image.load("bullet.png").convert_alpha()
 bullet_img = pg.transform.scale(bullet_img, (40, 40))
 ###
 
+### MENU
+###
+
 ### ПЛАТФОРМЫ
 class plat:
     def __init__(self, x, y):

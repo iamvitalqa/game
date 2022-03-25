@@ -50,3 +50,14 @@ def gameLoop():
     lead_x_change = 10
     lead_y_change = 0
 ###
+### Menu
+def show_menu():
+    menu_bckgr = pg.image.load("menu.png")
+    show = True
+    while show:
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                pg.quit()
+                quit()
+        display.blit(menu_bckgr, (0,0))
+###
