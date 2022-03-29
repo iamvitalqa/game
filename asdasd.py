@@ -1,5 +1,5 @@
+from pygame import *
 import pygame as pg
-import sys
 import random
 
 ### МУЗЫКА
@@ -49,6 +49,29 @@ bullet_img = pg.transform.scale(bullet_img, (40, 40))
 ###
 
 ### MENU
+class Menu:
+    def __init__(self):
+        self._option_surfaces = []
+        self._callbacks = []
+        self._current_option_index = 0
+    def append_option (self, option, callbacks):
+        self._option_surfaces.append(score_display.render(option, True, (WHITE)))
+        self._callbacks.append(callbacks)
+    def switch(self, direction):
+        self._current_option_index = max(0, min(self._current_option_index + direction, len(self._option_surfaces) -1))
+    def select(self):
+        self._callbacks[self._current_option_index]()
+    def draw(self, surf, x, y, option_y_padding):
+        for i, option in enumerate(self._option_surfaces):
+            option_rect = option.get_rect()
+            option_rect.topleft = (x, y + i * option_y_padding)
+            if i == self._current_option_index:
+                draw.rect(surf, (0, 100, 0), option_rect)
+            surf.blit(option, option_rect)
+
+menu = Menu()
+menu.append_option("Hello world!", lambda: print("Hello world!"))
+menu.append_option("Quit", quit)
 ###
 
 ### ПЛАТФОРМЫ
@@ -165,6 +188,7 @@ while not done:
         text = score_display.render("score: " + str(score), 1, (255,0,0))
         display.blit(text, (W - 10 - text.get_width(),10))
         display.blit(player, (x, y))
+        #menu.draw(display, 100, 100, 75)
         clock.tick(FPS)
         pg.display.update()
 ###

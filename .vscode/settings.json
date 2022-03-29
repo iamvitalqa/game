@@ -1,5 +1,6 @@
 {
     "files.autoSave": "afterDelay",
     "editor.renderWhitespace": "all",
-    "editor.bracketPairColorization.enabled": true
+    "editor.bracketPairColorization.enabled": true,
+    "workbench.colorTheme": "Monokai Dimmed"
 }
