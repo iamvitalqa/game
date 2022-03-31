@@ -46,6 +46,7 @@ pg.font.init()
 score_display = pg.font.SysFont("comicsans", 30)
 bullet_img = pg.image.load("bullet.png").convert_alpha()
 bullet_img = pg.transform.scale(bullet_img, (40, 40))
+menu_img = pg.image.load("menu.png").convert_alpha()
 ###
 
 ### MENU
@@ -55,7 +56,7 @@ class Menu:
         self._callbacks = []
         self._current_option_index = 0
     def append_option (self, option, callbacks):
-        self._option_surfaces.append(score_display.render(option, True, (WHITE)))
+        self._option_surfaces.append(score_display.render(option, True, (RED)))
         self._callbacks.append(callbacks)
     def switch(self, direction):
         self._current_option_index = max(0, min(self._current_option_index + direction, len(self._option_surfaces) -1))
@@ -66,12 +67,12 @@ class Menu:
             option_rect = option.get_rect()
             option_rect.topleft = (x, y + i * option_y_padding)
             if i == self._current_option_index:
-                draw.rect(surf, (0, 100, 0), option_rect)
+                draw.rect(surf, (0, 255, 0), option_rect)
             surf.blit(option, option_rect)
 
 menu = Menu()
-menu.append_option("Hello world!", lambda: print("Hello world!"))
-menu.append_option("Quit", quit)
+menu.append_option("Play", lambda: print("Hello"))
+menu.append_option("Exit", quit)
 ###
 
 ### ПЛАТФОРМЫ
@@ -109,12 +110,24 @@ pg.mixer.init()
 
 ### ГЛАВНЫЙ ЦИКЛ
 while not done:
+    keys = pg.key.get_pressed()
     events = pg.event.get()
     for event in events:
         if event.type == pg.QUIT:
             done = True
 
     display.blit(fon, (0, 0))
+
+### Menu switch
+    for event in events:
+        if event.type == pg.KEYDOWN:
+            if event.key == K_w:
+                menu.switch(-1)
+            elif event.key == K_s:
+                menu.switch(1)
+            elif event.key == K_e:
+                menu.select()
+###
 
 ### GAME OVER (Quit & Restart)
     if y > 750:
@@ -126,7 +139,6 @@ while not done:
     if y>760:
         game_over = True
         score = 0
-    keys = pg.key.get_pressed()
     if keys[pg.K_r]:
         game_over = False
     if keys[pg.K_q]:
@@ -188,7 +200,8 @@ while not done:
         text = score_display.render("score: " + str(score), 1, (255,0,0))
         display.blit(text, (W - 10 - text.get_width(),10))
         display.blit(player, (x, y))
-        #menu.draw(display, 100, 100, 75)
+        display.blit(menu_img, (0, 0))
+        menu.draw(display, 100, 100, 75)
         clock.tick(FPS)
         pg.display.update()
 ###
