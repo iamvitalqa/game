@@ -2,5 +2,5 @@
     "files.autoSave": "afterDelay",
     "editor.renderWhitespace": "all",
     "editor.bracketPairColorization.enabled": true,
-    "workbench.colorTheme": "Monokai Dimmed"
+    "workbench.colorTheme": "Abyss"
 }
