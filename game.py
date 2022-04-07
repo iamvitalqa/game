@@ -2,6 +2,7 @@ from pygame import *
 import pygame as pg
 import random
 import sys
+import webbrowser
 
 ### МУЗЫКА
 #pg.mixer.music.load("asd.mp3")
@@ -18,6 +19,7 @@ YELLOW = (255,255,0)
 GREEN = (0,255,0)
 BLUE = (0, 0, 255)
 PURPLE = (150, 0, 250)
+GREY = (100, 100, 100)
 speed = 8
 x = 100
 y = 100
@@ -38,13 +40,14 @@ display = pg.display.set_mode((1024, 768))
 screen = pg.Surface((1024, 768))
 pg.display.set_caption("Mshke Jump")
 fon = pg.image.load("fon.jpg").convert()
+menufon = pg.image.load("menu.jpg").convert()
 player = pg.image.load("BigBobych.png").convert_alpha()
 player = pg.transform.scale(player, (player.get_width()//5, player.get_height()//5))
 player = pg.transform.flip(player, True, False)
 platform = pg.image.load("platform.png").convert_alpha()
 platform = pg.transform.scale(platform, (platform.get_width()//20, platform.get_height()//23))
 platform2 = pg.image.load("platform2.png").convert_alpha()
-platform2 = pg.transform.scale(platform2, (platform2.get_width()//15, platform2.get_height()//15))
+platform2 = pg.transform.scale(platform2, (platform.get_width()//1, platform.get_height()//1))
 pg.font.init()
 score_display = pg.font.SysFont("comicsans", 30)
 bullet_img = pg.image.load("bullet.png").convert_alpha()
@@ -64,12 +67,12 @@ class Menu:
 
     def menu(self):
         run = False
-        font_menu = pg.font.SysFont('comicsans', 60)
+        font_menu = pg.font.SysFont('GothicBold', 60)
         punct = 0
 
 
         while not run:
-            screen.blit(fon, (0, 0))
+            screen.blit(menufon, (0, 0))
 
             mp = pg.mouse.get_pos()
             for i in self.puncts:
@@ -94,11 +97,18 @@ class Menu:
                         run = True
                     if punct == 1:
                         sys.exit()
-            display.blit(screen, (0, 0))
-            pg.display.flip()
+                    if punct == 2:
+                        webbrowser.open("https://vk.com/vitalqa", new=2)
+                    if punct == 3:
+                        webbrowser.open("https://vk.com/i_am_shoma", new=2)
 
-puncts = [(100, 80, 'Play', (RED), (PURPLE), 0),
-         (95, 180, 'Quit', (RED), (PURPLE), 1)]
+            display.blit(screen, (0, 0))
+            pg.display.update()
+
+puncts = [(100, 80, "Play", (GREY), (PURPLE), 0),
+         (95, 180, "Quit", (GREY), (PURPLE), 1),
+         (600, 480, "vitalqa", (GREY), (PURPLE), 2),
+         (600, 580, "Shoma", (GREY), (PURPLE), 3)]
 
 game = Menu(puncts)
 game.menu()
@@ -114,7 +124,6 @@ class plat2:
         self.y = y
 
 platforms = [plat(random.randrange(0, W), random.randrange(0, H)) for i in range(19)]
-platforms2 = [plat2(random.randrange(0, W), random.randrange(0, H)) for i in range(2)]
 ###
 
 ### СТРЕЛЬБА
@@ -154,9 +163,11 @@ while not done:
         text_x = display.get_width() / 2 - text_rect.width / 2
         text_y = display.get_height() / 2 - text_rect.height / 2
         display.blit(text, [text_x, text_y])
+
     if y>760:
         game_over = True
         score = 0
+
     keys = pg.key.get_pressed()
     if keys[pg.K_r]:
         game_over = False
@@ -170,8 +181,9 @@ while not done:
 
     for plat in platforms:
         display.blit(platform, (plat.x, plat.y))
-    for plat2 in platforms2:
-        display.blit(platform2, (plat2.x, plat2.y))
+
+    ################startplat = display.blit(platform2, (80, 730))
+
 
 ### GAME LOGIC
     if not game_over:
@@ -209,12 +221,6 @@ while not done:
                     plat.y = 0
                     plat.x = random.randrange(0, W)
                     score += random.randint(0,70)
-
-            for plat2 in platforms2:
-                plat2.y = plat2.y - dy
-                if plat2.y > H:
-                    plat2.y = 0
-                    plat2.x = random.randrange(0, W)
 
         dy += 0.2
         y += dy
