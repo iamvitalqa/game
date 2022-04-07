@@ -1,6 +1,7 @@
 from pygame import *
 import pygame as pg
 import random
+import sys
 
 ### МУЗЫКА
 #pg.mixer.music.load("asd.mp3")
@@ -16,6 +17,7 @@ RED = (255,0,0)
 YELLOW = (255,255,0)
 GREEN = (0,255,0)
 BLUE = (0, 0, 255)
+PURPLE = (150, 0, 250)
 speed = 8
 x = 100
 y = 100
@@ -33,6 +35,7 @@ done = False
 
 ### ДИСПЛЕЙ
 display = pg.display.set_mode((1024, 768))
+screen = pg.Surface((1024, 768))
 pg.display.set_caption("Mshke Jump")
 fon = pg.image.load("fon.jpg").convert()
 player = pg.image.load("BigBobych.png").convert_alpha()
@@ -46,34 +49,59 @@ pg.font.init()
 score_display = pg.font.SysFont("comicsans", 30)
 bullet_img = pg.image.load("bullet.png").convert_alpha()
 bullet_img = pg.transform.scale(bullet_img, (40, 40))
-menu_img = pg.image.load("menu.png").convert_alpha()
 ###
 
-### MENU
 class Menu:
-    def __init__(self):
-        self._option_surfaces = []
-        self._callbacks = []
-        self._current_option_index = 0
-    def append_option (self, option, callbacks):
-        self._option_surfaces.append(score_display.render(option, True, (RED)))
-        self._callbacks.append(callbacks)
-    def switch(self, direction):
-        self._current_option_index = max(0, min(self._current_option_index + direction, len(self._option_surfaces) -1))
-    def select(self):
-        self._callbacks[self._current_option_index]()
-    def draw(self, surf, x, y, option_y_padding):
-        for i, option in enumerate(self._option_surfaces):
-            option_rect = option.get_rect()
-            option_rect.topleft = (x, y + i * option_y_padding)
-            if i == self._current_option_index:
-                draw.rect(surf, (0, 255, 0), option_rect)
-            surf.blit(option, option_rect)
+    def __init__(self, puncts=[120, 140, 'Punct', (250, 250, 30), (250, 30, 250), 0]):
+        self.puncts = puncts
 
-menu = Menu()
-menu.append_option("Play", lambda: print("Hello"))
-menu.append_option("Exit", quit)
-###
+    def render(self, poverhnost, font, num_punct):
+        for i in self.puncts:
+            if num_punct == i[5]:
+                poverhnost.blit(font.render(i[2], 1, i[4]), (i[0], i[1]))
+            else:
+                poverhnost.blit(font.render(i[2], 1, i[3]), (i[0], i[1]))
+
+    def menu(self):
+        run = False
+        font_menu = pg.font.SysFont('comicsans', 60)
+        punct = 0
+
+
+        while not run:
+            screen.blit(fon, (0, 0))
+
+            mp = pg.mouse.get_pos()
+            for i in self.puncts:
+                if mp[0] > i[0] and mp[0] < i[0] + 155 and mp[1] > i[1] and mp[1] < i[1] + 50:
+                    punct = i[5]
+            self.render(screen, font_menu, punct)
+
+            for e in pg.event.get():
+                if e.type == pg.QUIT:
+                   sys.exit()
+                if e.type == pg.KEYDOWN:
+                    if e.key == pg.K_ESCAPE:
+                       sys.exit()
+                    if e.key == pg.K_UP:
+                        if punct > 0:
+                            punct -= 1
+                    if e.key == pg.K_DOWN:
+                        if punct < len(self.puncts) - 1:
+                            punct += 1
+                if e.type == pg.MOUSEBUTTONDOWN and e.button == 1:
+                    if punct == 0:
+                        run = True
+                    if punct == 1:
+                        sys.exit()
+            display.blit(screen, (0, 0))
+            pg.display.flip()
+
+puncts = [(100, 80, 'Play', (RED), (PURPLE), 0),
+         (95, 180, 'Quit', (RED), (PURPLE), 1)]
+
+game = Menu(puncts)
+game.menu()
 
 ### ПЛАТФОРМЫ
 class plat:
@@ -89,7 +117,6 @@ platforms = [plat(random.randrange(0, W), random.randrange(0, H)) for i in range
 platforms2 = [plat2(random.randrange(0, W), random.randrange(0, H)) for i in range(2)]
 ###
 
-
 ### СТРЕЛЬБА
 class Bullet:
     def __init__(self, x, y,):
@@ -101,33 +128,24 @@ class Bullet:
         if self.y >= 0:
             display.blit(bullet_img, (self.x, self.y))
             return True
-        else: 
+        else:
             return False
 ###
 
 pg.mixer.pre_init(44100, -16, 2, 1024)
 pg.mixer.init()
 
+### Game over music:
+###
+
 ### ГЛАВНЫЙ ЦИКЛ
 while not done:
-    keys = pg.key.get_pressed()
     events = pg.event.get()
     for event in events:
         if event.type == pg.QUIT:
             done = True
 
     display.blit(fon, (0, 0))
-
-### Menu switch
-    for event in events:
-        if event.type == pg.KEYDOWN:
-            if event.key == K_w:
-                menu.switch(-1)
-            elif event.key == K_s:
-                menu.switch(1)
-            elif event.key == K_e:
-                menu.select()
-###
 
 ### GAME OVER (Quit & Restart)
     if y > 750:
@@ -139,11 +157,16 @@ while not done:
     if y>760:
         game_over = True
         score = 0
+    keys = pg.key.get_pressed()
     if keys[pg.K_r]:
         game_over = False
     if keys[pg.K_q]:
         done = True
-###
+
+    if score == 0:
+        for plat in platforms:
+            if (x + 50 > plat.x) and (x + 20 < plat.x + 68) and (y + 70 > plat.y) and (y + 70 < plat.y + 14) and dy > 0:
+                dy = -10
 
     for plat in platforms:
         display.blit(platform, (plat.x, plat.y))
@@ -157,11 +180,15 @@ while not done:
             player = pg.image.load("BigBobych.png")
             player = pg.transform.scale(player, (player.get_width()//5, player.get_height()//5))
             player = pg.transform.flip(player, True, False)
+            if x <= 0:
+                x = 1024
         if keys[pg.K_d] and x + player_w < W:
             x += speed
             player = pg.image.load("BigBobych.png")
             player = pg.transform.scale(player, (player.get_width()//5, player.get_height()//5))
             player = pg.transform.flip(player, True, False)
+            if x + player_w > W:
+                x = 0
 
         if keys[pg.K_SPACE]:
             if len(allbullets) < 1:
@@ -200,9 +227,6 @@ while not done:
         text = score_display.render("score: " + str(score), 1, (255,0,0))
         display.blit(text, (W - 10 - text.get_width(),10))
         display.blit(player, (x, y))
-        display.blit(menu_img, (0, 0))
-        menu.draw(display, 100, 100, 75)
         clock.tick(FPS)
         pg.display.update()
 ###
-

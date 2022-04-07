@@ -1,63 +1,208 @@
+from pygame import *
+import pygame as pg
+import random
+
+### МУЗЫКА
+#pg.mixer.music.load("asd.mp3")
+#pg.mixer.music.play(-1)
+#pg.mixer.music.set_volume(0.05)
+###
+
+### КОНСТАНТЫ
+W = 1024
+H = 768
+WHITE = (255,255,255)
+RED = (255,0,0)
+YELLOW = (255,255,0)
+GREEN = (0,255,0)
+BLUE = (0, 0, 255)
+speed = 8
+x = 100
+y = 100
+dy = 0.0
+h = 400
+score = 0
+player_w = 50
+restart = 'R'
+FPS = 100
+clock=pg.time.Clock()
+allbullets = []
+game_over = False
+done = False
+###
+
+### ДИСПЛЕЙ
+display = pg.display.set_mode((1024, 768))
+pg.display.set_caption("Mshke Jump")
+fon = pg.image.load("fon.jpg").convert()
+player = pg.image.load("BigBobych.png").convert_alpha()
+player = pg.transform.scale(player, (player.get_width()//5, player.get_height()//5))
+player = pg.transform.flip(player, True, False)
+platform = pg.image.load("platform.png").convert_alpha()
+platform = pg.transform.scale(platform, (platform.get_width()//20, platform.get_height()//23))
+platform2 = pg.image.load("platform2.png").convert_alpha()
+platform2 = pg.transform.scale(platform2, (platform2.get_width()//15, platform2.get_height()//15))
+pg.font.init()
+score_display = pg.font.SysFont("comicsans", 30)
+bullet_img = pg.image.load("bullet.png").convert_alpha()
+bullet_img = pg.transform.scale(bullet_img, (40, 40))
+menu_img = pg.image.load("menu.png").convert_alpha()
+###
+
+### MENU
+class Menu:
+    def __init__(self):
+        self._option_surfaces = []
+        self._callbacks = []
+        self._current_option_index = 0
+    def append_option (self, option, callbacks):
+        self._option_surfaces.append(score_display.render(option, True, (RED)))
+        self._callbacks.append(callbacks)
+    def switch(self, direction):
+        self._current_option_index = max(0, min(self._current_option_index + direction, len(self._option_surfaces) -1))
+    def select(self):
+        self._callbacks[self._current_option_index]()
+    def draw(self, surf, x, y, option_y_padding):
+        for i, option in enumerate(self._option_surfaces):
+            option_rect = option.get_rect()
+            option_rect.topleft = (x, y + i * option_y_padding)
+            if i == self._current_option_index:
+                draw.rect(surf, (0, 255, 0), option_rect)
+            surf.blit(option, option_rect)
+
+menu = Menu()
+menu.append_option("Play", lambda: print("Hello"))
+menu.append_option("Exit", quit)
+###
+
+### ПЛАТФОРМЫ
+class plat:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+class plat2:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+platforms = [plat(random.randrange(0, W), random.randrange(0, H)) for i in range(19)]
+platforms2 = [plat2(random.randrange(0, W), random.randrange(0, H)) for i in range(2)]
+###
+
+
+### СТРЕЛЬБА
+class Bullet:
+    def __init__(self, x, y,):
+        self.x = x
+        self.y = y
+        self.speed = 5
+    def move_bullet(self):
+        self.y -= self.speed
+        if self.y >= 0:
+            display.blit(bullet_img, (self.x, self.y))
+            return True
+        else: 
+            return False
+###
+
+pg.mixer.pre_init(44100, -16, 2, 1024)
+pg.mixer.init()
+
+### ГЛАВНЫЙ ЦИКЛ
+while not done:
+    keys = pg.key.get_pressed()
+    events = pg.event.get()
+    for event in events:
+        if event.type == pg.QUIT:
+            done = True
+
+    display.blit(fon, (0, 0))
+
+### Menu switch
+    for event in events:
+        if event.type == pg.KEYDOWN:
+            if event.key == K_w:
+                menu.switch(-1)
+            elif event.key == K_s:
+                menu.switch(1)
+            elif event.key == K_e:
+                menu.select()
+###
+
+### GAME OVER (Quit & Restart)
     if y > 750:
-        gameover = score_display.render("GAME OVER! Press this to restart => " + str(restart), 1, (GREEN))
-        display.blit(gameover,(250,200))
-        if y > 760:
-           score = 0
-
-### GAME OVER
-def show_go_screen(self):
-        if not self.running:
-            return
-        self.screen.blit(fon,(0,0))
-        self.draw_text("Press R to play again", 22, GREEN, W/2, H/4)
-        pg.display.flip()
-        while waiting:
-            self.clock.tick(FPS)
-            for event in pg.event.get():
-                if event.type == pg.QUIT:
-                    waiting = False
-                    self.running = False
-                if event.type == pg.KEYDOWN:
-                   if event.key == pg.K_r:
-                      waiting = False
-def wait_for_key(self):
-        while waiting:
-            self.clock.tick(FPS)
-            for event in pg.event.get():
-                if event.type == pg.QUIT:
-                    waiting = False
-                    self.running = False
-                if event.type == pg.KEYUP:
-                    waiting = False
-
-
-                    ### GAME OVER TEXT
-def text_objects(text, color):
-    textSurface = score_display.render(text, True, color)
-    return textSurface, textSurface.get_rect()
-
-def screen_gameover(msg, color, y_displace=0):
-    textSurf, textRect = text_objects(msg, color)
-    textRect.center = (W/2,), (H/2) + y_displace
-    display.blit(textSurf, textRect)
-
-def gameLoop():
-    global direction
-    gameexit = False
-    gameover = False
-    lead_x = W/2
-    lead_y = H/2
-    lead_x_change = 10
-    lead_y_change = 0
+        text = score_display.render("GAME OVER! R -> Restart  Q -> Quit", True, RED)
+        text_rect = text.get_rect()
+        text_x = display.get_width() / 2 - text_rect.width / 2
+        text_y = display.get_height() / 2 - text_rect.height / 2
+        display.blit(text, [text_x, text_y])
+    if y>760:
+        game_over = True
+        score = 0
+    if keys[pg.K_r]:
+        game_over = False
+    if keys[pg.K_q]:
+        done = True
 ###
-### Menu
-def show_menu():
-    menu_bckgr = pg.image.load("menu.png")
-    show = True
-    while show:
-        for event in pg.event.get():
-            if event.type == pg.QUIT:
-                pg.quit()
-                quit()
-        display.blit(menu_bckgr, (0,0))
+
+    for plat in platforms:
+        display.blit(platform, (plat.x, plat.y))
+    for plat2 in platforms2:
+        display.blit(platform2, (plat2.x, plat2.y))
+
+### GAME LOGIC
+    if not game_over:
+        if keys[pg.K_a] and x > 0:
+            x -= speed
+            player = pg.image.load("BigBobych.png")
+            player = pg.transform.scale(player, (player.get_width()//5, player.get_height()//5))
+            player = pg.transform.flip(player, True, False)
+        if keys[pg.K_d] and x + player_w < W:
+            x += speed
+            player = pg.image.load("BigBobych.png")
+            player = pg.transform.scale(player, (player.get_width()//5, player.get_height()//5))
+            player = pg.transform.flip(player, True, False)
+
+        if keys[pg.K_SPACE]:
+            if len(allbullets) < 1:
+                allbullets.append(Bullet(x-20, y))
+                pg.mixer.music.load("bullet.wav")
+                pg.mixer.music.play(1)
+                pg.mixer.music.set_volume(1)
+
+        for bullet in allbullets:
+            if not bullet.move_bullet():
+                allbullets.remove(bullet)
+
+        if y < h:
+            y = h
+            for plat in platforms:
+                plat.y = plat.y - dy
+                if plat.y > H:
+                    plat.y = 0
+                    plat.x = random.randrange(0, W)
+                    score += random.randint(0,70)
+
+            for plat2 in platforms2:
+                plat2.y = plat2.y - dy
+                if plat2.y > H:
+                    plat2.y = 0
+                    plat2.x = random.randrange(0, W)
+
+        dy += 0.2
+        y += dy
+        if y > H:
+            dy = -10
+        for plat in platforms:
+            if (x + 50 > plat.x) and (x + 20 < plat.x + 68) and (y + 70 > plat.y) and (y + 70 < plat.y + 14) and dy > 0:
+                dy = -10
+
+        text = score_display.render("score: " + str(score), 1, (255,0,0))
+        display.blit(text, (W - 10 - text.get_width(),10))
+        display.blit(player, (x, y))
+        display.blit(menu_img, (0, 0))
+        menu.draw(display, 100, 100, 75)
+        clock.tick(FPS)
+        pg.display.update()
 ###
+
