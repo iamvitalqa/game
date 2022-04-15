@@ -1,4 +1,4 @@
-from pygame import *
+from pygame.locals import *
 import pygame as pg
 import random
 import sys
@@ -38,7 +38,7 @@ done = False
 ### ДИСПЛЕЙ
 display = pg.display.set_mode((1024, 768))
 screen = pg.Surface((1024, 768))
-pg.display.set_caption("Mshke Jump")
+pg.display.set_caption("Mshke Jump!")
 fon = pg.image.load("fon.jpg").convert()
 menufon = pg.image.load("menu.jpg").convert()
 player = pg.image.load("BigBobych.png").convert_alpha()
